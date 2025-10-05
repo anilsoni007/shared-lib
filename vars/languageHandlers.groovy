@@ -77,8 +77,9 @@ def buildPython() {
 }
 
 def testPython() {
+    sh 'pip install pytest || echo "pytest install failed"'
     sh 'python -m pytest --junitxml=test-results.xml || echo "Tests completed"'
-    publishTestResults testResultsPattern: 'test-results.xml', allowEmptyResults: true
+    junit testResultsPattern: 'test-results.xml', allowEmptyResults: true
 }
 
 def packagePython() {
@@ -100,10 +101,10 @@ def buildJava(buildTool) {
 def testJava(buildTool) {
     if (buildTool == 'maven') {
         sh 'mvn test -B'
-        publishTestResults testResultsPattern: 'target/surefire-reports/*.xml', allowEmptyResults: true
+        junit testResultsPattern: 'target/surefire-reports/*.xml', allowEmptyResults: true
     } else if (buildTool == 'gradle') {
         sh './gradlew test'
-        publishTestResults testResultsPattern: 'build/test-results/test/*.xml', allowEmptyResults: true
+        junit testResultsPattern: 'build/test-results/test/*.xml', allowEmptyResults: true
     }
 }
 
