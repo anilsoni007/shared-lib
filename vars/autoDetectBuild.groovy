@@ -1,52 +1,62 @@
 def call(Map config = [:]) {
-    // Initial project detection (may be limited before checkout)
-    def initialProjectType = detectProjectType()
-    def podLabel = selectPodTemplate(initialProjectType)
+    // Use default pod for initial checkout when no SCM context
+    def podLabel = config.gitUrl ? 'java' : selectPodTemplate(detectProjectType())
     
-    echo "Initial detection: ${initialProjectType}, using pod: ${podLabel}"
+    echo "Using pod: ${podLabel}"
     
     node(podLabel) {
-        def projectType = initialProjectType
-        
         stage('Checkout & Detect') {
             if (config.gitUrl) {
                 git branch: config.gitBranch ?: 'main', url: config.gitUrl
             } else {
                 checkout scm
             }
-            projectType = detectProjectType()
-            echo "Final project type: ${projectType}"
+            def projectType = detectProjectType()
+            echo "Detected project type: ${projectType}"
             
-            if (projectType != initialProjectType) {
-                echo "Warning: Project type changed after checkout. Consider restarting with correct pod."
+            // If we used default pod but detected different type, restart with correct pod
+            if (config.gitUrl && podLabel == 'java' && projectType != 'java') {
+                def correctPodLabel = selectPodTemplate(projectType)
+                echo "Restarting with correct pod: ${correctPodLabel}"
+                
+                node(correctPodLabel) {
+                    git branch: config.gitBranch ?: 'main', url: config.gitUrl
+                    runBuildStages(projectType, config)
+                }
+                return
             }
+            
+            runBuildStages(projectType, config)
         }
+    }
+}
+
+def runBuildStages(projectType, config) {
         
-        stage('Build') {
-            buildProject(projectType)
+    stage('Build') {
+        buildProject(projectType)
+    }
+    
+    if (shouldRunTests(config, projectType)) {
+        stage('Test') {
+            testProject(projectType)
         }
-        
-        if (shouldRunTests(config, projectType)) {
-            stage('Test') {
-                testProject(projectType)
-            }
+    }
+    
+    if (shouldPackage(config, projectType)) {
+        stage('Package') {
+            packageProject(projectType)
         }
-        
-        if (shouldPackage(config, projectType)) {
-            stage('Package') {
-                packageProject(projectType)
-            }
+    }
+    
+    if (shouldDeploy(config)) {
+        stage('Deploy') {
+            deployProject(projectType, config)
         }
-        
-        if (shouldDeploy(config)) {
-            stage('Deploy') {
-                deployProject(projectType, config)
-            }
-        }
-        
-        stage('Post Actions') {
-            postActions(projectType, config)
-        }
+    }
+    
+    stage('Post Actions') {
+        postActions(projectType, config)
     }
 }
 
