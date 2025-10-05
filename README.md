@@ -6,6 +6,8 @@ This shared library automatically detects project types and assigns appropriate 
 
 - **Auto Project Detection**: Detects Maven, Gradle, Node.js, Python, Docker, and Go projects
 - **Smart Pod Assignment**: Automatically selects the right pod template based on project type
+- **Quick Build Methods**: `buildOnly()` and `buildAndTest()` for fast validation
+- **App Configuration**: Pre-configured pipelines using resource files
 - **Predefined Stages**: Build, Test, Package, and Deploy stages with project-specific logic
 - **Flexible Configuration**: Customizable pipeline behavior through configuration parameters
 
@@ -33,6 +35,20 @@ autoDetectBuild([
     deployCommand: 'kubectl apply -f k8s/',
     notifications: true
 ])
+```
+
+### Quick Build Methods
+
+```groovy
+// Build only (compilation/validation)
+buildOnly('https://github.com/your-repo.git', 'main')
+
+// Build and test
+buildAndTest('https://github.com/your-repo.git', 'main')
+
+// For Multibranch/SCM pipelines (no URL needed)
+buildOnly()
+buildAndTest()
 ```
 
 ### Alternative Functions
@@ -102,6 +118,24 @@ smartPipeline([
    ```
 
 ## Examples
+
+### Quick Build Validation
+```groovy
+@Library('shared-lib') _
+buildOnly('https://github.com/your-repo.git', 'main')
+```
+
+### Build and Test
+```groovy
+@Library('shared-lib') _
+buildAndTest('https://github.com/your-repo.git', 'main')
+```
+
+### Full Pipeline with App Configuration
+```groovy
+@Library('shared-lib') _
+appPipeline('python_votingapp')
+```
 
 ### Maven Project
 ```groovy
