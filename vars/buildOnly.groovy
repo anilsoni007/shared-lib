@@ -1,10 +1,14 @@
-def call() {
+def call(String gitUrl = null, String branch = 'main') {
     def detectedProject
     def podTemplate
     
     node('java') { // temporary node for detection
         stage('Checkout') {
-            checkout scm
+            if (gitUrl) {
+                git branch: branch, url: gitUrl
+            } else {
+                checkout scm
+            }
         }
         
         detectedProject = detectProject()
@@ -16,7 +20,11 @@ def call() {
     
     node(podTemplate) {
         stage('Checkout') {
-            checkout scm
+            if (gitUrl) {
+                git branch: branch, url: gitUrl
+            } else {
+                checkout scm
+            }
         }
         
         stage('Build') {
