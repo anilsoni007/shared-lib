@@ -1,6 +1,15 @@
 def call() {
-    def detectedProject = detectProject()
-    def podTemplate = languageHandlers.getPodTemplate(detectedProject.language)
+    def detectedProject
+    def podTemplate
+    
+    node('java') { // temporary node for detection
+        stage('Checkout') {
+            checkout scm
+        }
+        
+        detectedProject = detectProject()
+        podTemplate = languageHandlers.getPodTemplate(detectedProject.language)
+    }
     
     echo "Auto-detected: ${detectedProject.language} (${detectedProject.buildTool ?: 'default'})"
     echo "Using pod template: ${podTemplate}"
