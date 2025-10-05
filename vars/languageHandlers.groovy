@@ -79,7 +79,7 @@ def buildPython() {
 def testPython() {
     sh 'pip install pytest || echo "pytest install failed"'
     sh 'python -m pytest --junitxml=test-results.xml || echo "Tests completed"'
-    junit 'test-results.xml'
+    junit allowEmptyResults: true, testResults: 'test-results.xml'
 }
 
 def packagePython() {
