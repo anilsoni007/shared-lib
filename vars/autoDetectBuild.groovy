@@ -9,7 +9,11 @@ def call(Map config = [:]) {
         def projectType = initialProjectType
         
         stage('Checkout & Detect') {
-            checkout scm
+            if (config.gitUrl) {
+                git branch: config.gitBranch ?: 'main', url: config.gitUrl
+            } else {
+                checkout scm
+            }
             projectType = detectProjectType()
             echo "Final project type: ${projectType}"
             
