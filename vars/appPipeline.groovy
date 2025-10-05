@@ -2,52 +2,45 @@ def call(String appName) {
     // Load app configuration
     def appConfig = libraryResource("apps/${appName}.groovy")
     def config = evaluate(appConfig)
+    def podTemplate = languageHandlers.getPodTemplate(config.language)
     
     echo "Running pipeline for app: ${appName}"
-    echo "Using pod template: ${config.podTemplate}"
+    echo "Language: ${config.language}, Pod: ${podTemplate}"
     
-    node(config.podTemplate) {
+    node(podTemplate) {
         stage('Checkout') {
             git branch: config.gitBranch, url: config.gitUrl
         }
         
-        if (config.stages.build.enabled) {
+        if (config.stages.build) {
             stage('Build') {
-                container(config.podTemplate) {
-                    config.stages.build.commands.each { cmd ->
-                        sh cmd
-                    }
+                container(podTemplate) {
+                    languageHandlers.buildProject(config.language, config.buildTool)
                 }
             }
         }
         
-        if (config.stages.test.enabled) {
+        if (config.stages.test) {
             stage('Test') {
-                container(config.podTemplate) {
-                    config.stages.test.commands.each { cmd ->
-                        sh cmd
-                    }
+                container(podTemplate) {
+                    languageHandlers.testProject(config.language, config.buildTool)
                 }
             }
         }
         
-        if (config.stages.package?.enabled) {
+        if (config.stages.package) {
             stage('Package') {
-                container(config.podTemplate) {
-                    config.stages.package.commands.each { cmd ->
-                        sh cmd
-                    }
+                container(podTemplate) {
+                    languageHandlers.packageProject(config.language, config.buildTool)
                 }
             }
         }
         
-        if (config.stages.deploy.enabled) {
+        if (config.stages.deploy?.enabled) {
             stage('Deploy') {
-                container(config.podTemplate) {
+                container(podTemplate) {
                     echo "Deploying to: ${config.stages.deploy.target}"
-                    config.stages.deploy.commands.each { cmd ->
-                        sh cmd
-                    }
+                    sh "kubectl apply -f ${config.stages.deploy.manifest}"
                 }
             }
         }
