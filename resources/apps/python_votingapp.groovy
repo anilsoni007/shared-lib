@@ -5,7 +5,7 @@ return [
     stages: [
         build: true,
         test: true,
-        package: false,
+        package: true,
         deploy: [
             enabled: false,
             target: 'staging',
