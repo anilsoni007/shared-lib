@@ -1,0 +1,8 @@
+@Library('shared-lib') _
+
+// Node.js project with deployment
+detectAndBuild([
+    deploy: true,
+    deployCommand: 'npm run deploy',
+    codeQuality: true
+])

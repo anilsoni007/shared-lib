@@ -1,0 +1,12 @@
+@Library('shared-lib') _
+
+// Docker project with registry push
+detectAndBuild([
+    skipTests: true,
+    deploy: true,
+    deployCommand: '''
+        docker tag ${DOCKER_IMAGE} myregistry.com/${JOB_NAME}:${BUILD_NUMBER}
+        docker push myregistry.com/${JOB_NAME}:${BUILD_NUMBER}
+    ''',
+    securityScan: true
+])

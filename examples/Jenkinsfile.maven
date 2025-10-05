@@ -1,0 +1,4 @@
+@Library('shared-lib') _
+
+// Basic Maven project pipeline
+detectAndBuild()

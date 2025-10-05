@@ -1,0 +1,17 @@
+@Library('shared-lib') _
+
+// Advanced pipeline with all features
+detectAndBuild([
+    skipTests: false,
+    skipPackage: false,
+    codeQuality: true,
+    securityScan: true,
+    deploy: env.BRANCH_NAME == 'main',
+    deployCommand: '''
+        if [ "$BRANCH_NAME" = "main" ]; then
+            kubectl apply -f k8s/production/
+        else
+            kubectl apply -f k8s/staging/
+        fi
+    '''
+])
