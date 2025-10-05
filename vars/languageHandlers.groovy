@@ -79,7 +79,7 @@ def buildPython() {
 def testPython() {
     sh 'pip install pytest || echo "pytest install failed"'
     sh 'python -m pytest --junitxml=test-results.xml || echo "Tests completed"'
-    junit testResultsPattern: 'test-results.xml', allowEmptyResults: true
+    junit 'test-results.xml'
 }
 
 def packagePython() {
@@ -101,10 +101,10 @@ def buildJava(buildTool) {
 def testJava(buildTool) {
     if (buildTool == 'maven') {
         sh 'mvn test -B'
-        junit testResultsPattern: 'target/surefire-reports/*.xml', allowEmptyResults: true
+        junit 'target/surefire-reports/*.xml'
     } else if (buildTool == 'gradle') {
         sh './gradlew test'
-        junit testResultsPattern: 'build/test-results/test/*.xml', allowEmptyResults: true
+        junit 'build/test-results/test/*.xml'
     }
 }
 
